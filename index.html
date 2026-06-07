@@ -1296,7 +1296,13 @@
             // Check URL parameter untuk admin access
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('luxeadmin') === 'true') {
-                goToSection('login');
+                if (currentUser) {
+                    // Sudah login, langsung ke admin
+                    goToSection('admin');
+                } else {
+                    // Belum login, ke login page
+                    goToSection('login');
+                }
             }
         });
 
@@ -1328,6 +1334,12 @@
 
         // Check admin access
         function checkAdminAccess() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('luxeadmin') !== 'true') {
+                console.warn('❌ Akses admin ditolak');
+                return;
+            }
+            
             if (currentUser) {
                 goToSection('admin');
             } else {
@@ -1405,6 +1417,9 @@
                 localStorage.removeItem('luxeHairUser');
                 sessionStorage.removeItem('luxeHairUser');
                 hideUserProfile();
+                
+                // Hapus URL parameter dan redirect ke landing
+                window.history.replaceState({}, document.title, window.location.pathname);
                 goToSection('landing');
             }
         }
@@ -1505,10 +1520,13 @@
 
         // Navigation
         function goToSection(sectionId) {
-            // Protect admin section
-            if (sectionId === 'admin' && !currentUser) {
-                goToSection('login');
-                return;
+            // Protect admin section - hanya bisa diakses via URL parameter
+            if (sectionId === 'admin') {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('luxeadmin') !== 'true') {
+                    console.warn('❌ Akses admin ditolak');
+                    return;
+                }
             }
             
             document.querySelectorAll('section').forEach(section => {
