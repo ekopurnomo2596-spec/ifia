@@ -1336,7 +1336,7 @@
         function checkAdminAccess() {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('luxeadmin') !== 'true') {
-                console.warn('❌ Akses admin ditolak');
+                console.warn('❌ Akses ditolak - URL tidak valid');
                 return;
             }
             
@@ -1390,6 +1390,15 @@
 
         // Handle successful login
         function loginSuccess(user, remember) {
+            // Cek apakah akses via URL parameter yang benar
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('luxeadmin') !== 'true') {
+                const errorEl = document.getElementById('loginError');
+                errorEl.textContent = '❌ Akses ditolak. URL tidak valid.';
+                errorEl.classList.add('show');
+                return;
+            }
+
             currentUser = user;
             if (remember) {
                 localStorage.setItem('luxeHairUser', JSON.stringify(user));
@@ -1520,11 +1529,11 @@
 
         // Navigation
         function goToSection(sectionId) {
-            // Protect admin section - hanya bisa diakses via URL parameter
-            if (sectionId === 'admin') {
+            // Protect admin dan login section - hanya bisa diakses via URL parameter
+            if (sectionId === 'admin' || sectionId === 'login') {
                 const urlParams = new URLSearchParams(window.location.search);
                 if (urlParams.get('luxeadmin') !== 'true') {
-                    console.warn('❌ Akses admin ditolak');
+                    console.warn('❌ Akses ditolak');
                     return;
                 }
             }
